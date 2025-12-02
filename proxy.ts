@@ -1,13 +1,26 @@
+// proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { signToken, verifyToken } from '@/lib/auth/session';
 
 const protectedRoutes = '/dashboard';
+const authRoutes = ['/sign-in', '/sign-up'];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get('session');
   const isProtectedRoute = pathname.startsWith(protectedRoutes);
+  const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
+
+  // Redirect to dashboard if trying to access auth pages while logged in
+  if (isAuthRoute && sessionCookie) {
+    try {
+      await verifyToken(sessionCookie.value);
+      return NextResponse.redirect(new URL('/meetings', request.url));
+    } catch (error) {
+      // Token invalid, continue to auth page
+    }
+  }
 
   if (isProtectedRoute && !sessionCookie) {
     return NextResponse.redirect(new URL('/sign-in', request.url));
@@ -45,5 +58,4 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
-  runtime: 'nodejs'
 };

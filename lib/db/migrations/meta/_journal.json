@@ -8,6 +8,27 @@
       "when": 1726443359662,
       "tag": "0000_soft_the_anarchist",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764657552392,
+      "tag": "0001_giant_tiger_shark",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764663427482,
+      "tag": "0002_whole_starhawk",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764664917714,
+      "tag": "0003_lonely_shadowcat",
+      "breakpoints": true
     }
   ]
 }

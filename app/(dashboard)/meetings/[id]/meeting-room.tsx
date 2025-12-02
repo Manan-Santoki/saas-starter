@@ -17,6 +17,7 @@ export function MeetingRoom({ meeting, user, isModerator }: MeetingRoomProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const roomSlug = meeting.roomName.split('/').pop() || meeting.roomName;
 
   useEffect(() => {
     const generateToken = async () => {
@@ -33,7 +34,7 @@ export function MeetingRoom({ meeting, user, isModerator }: MeetingRoomProps) {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            roomName: meeting.roomName,
+            roomName: roomSlug,
             isModerator,
           }),
         });
@@ -53,7 +54,7 @@ export function MeetingRoom({ meeting, user, isModerator }: MeetingRoomProps) {
     };
 
     generateToken();
-  }, [meeting.id, meeting.roomName, isModerator]);
+  }, [meeting.id, meeting.roomName, isModerator, roomSlug]);
 
   const handleMeetingEnd = () => {
     router.push('/dashboard/meetings');
@@ -90,7 +91,7 @@ export function MeetingRoom({ meeting, user, isModerator }: MeetingRoomProps) {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col">
+    <div className="h-full w-full flex flex-col overflow-hidden">
       <div className="bg-white border-b px-4 py-3 flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">
@@ -106,9 +107,9 @@ export function MeetingRoom({ meeting, user, isModerator }: MeetingRoomProps) {
           </span>
         )}
       </div>
-      <div className="flex-1">
+      <div className="w-full h-[calc(100vh-64px-48px)] bg-black">
         <JitsiMeetingComponent
-          roomName={meeting.roomName}
+          roomName={roomSlug}
           userDisplayName={user.name || user.email}
           userEmail={user.email}
           jwt={jwt}

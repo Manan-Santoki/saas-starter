@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, Video, Users, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Video, Users, Trash2, MailPlus } from 'lucide-react';
 import type { Meeting } from '@/lib/db/schema';
 import {
   AlertDialog,
@@ -17,6 +17,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface MeetingsListProps {
   meetings: Meeting[];
@@ -29,8 +39,14 @@ export function MeetingsList({ meetings, userId }: MeetingsListProps) {
   const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleJoinMeeting = (meetingId: number) => {
-    router.push(`/meetings/${meetingId}`);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmails, setInviteEmails] = useState('');
+  const [isSendingInvites, setIsSendingInvites] = useState(false);
+  const [inviteMessage, setInviteMessage] = useState('');
+
+  const handleJoinMeeting = (meeting: Meeting) => {
+    // Extract UUID from roomName (format: appId/uuid)
+    const roomSlug = meeting.roomName.split('/').pop() || meeting.roomName; router.push(`/meet/${roomSlug}`);
   };
 
   const handleDeleteClick = (meeting: Meeting) => {
@@ -56,6 +72,50 @@ export function MeetingsList({ meetings, userId }: MeetingsListProps) {
       setIsDeleting(false);
       setDeleteDialogOpen(false);
       setSelectedMeeting(null);
+    }
+  };
+
+  const handleInviteClick = (meeting: Meeting) => {
+    setSelectedMeeting(meeting);
+    setInviteEmails('');
+    setInviteMessage('');
+    setInviteDialogOpen(true);
+  };
+
+  const handleSendInvites = async () => {
+    if (!selectedMeeting || !inviteEmails.trim()) return;
+
+    setIsSendingInvites(true);
+    setInviteMessage('');
+
+    const emailList = inviteEmails
+      .split(/[,\n]/)
+      .map(email => email.trim())
+      .filter(email => email.length > 0);
+
+    try {
+      const response = await fetch(`/api/meetings/${selectedMeeting.id}/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ emails: emailList }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInviteMessage(`✓ Successfully sent ${data.message.split(' ')[1]} invitations!`);
+        setTimeout(() => {
+          setInviteDialogOpen(false);
+          setInviteEmails('');
+          setInviteMessage('');
+        }, 2000);
+      } else {
+        setInviteMessage('✗ Failed to send invitations. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error sending invites:', error);
+      setInviteMessage('✗ Error sending invitations.');
+    } finally {
+      setIsSendingInvites(false);
     }
   };
 
@@ -135,7 +195,7 @@ export function MeetingsList({ meetings, userId }: MeetingsListProps) {
             </CardContent>
             <CardFooter className="flex gap-2">
               <Button
-                onClick={() => handleJoinMeeting(meeting.id)}
+                onClick={() => handleJoinMeeting(meeting)}
                 disabled={!meeting.isActive}
                 className="flex-1"
               >
@@ -143,13 +203,24 @@ export function MeetingsList({ meetings, userId }: MeetingsListProps) {
                 Join
               </Button>
               {meeting.createdBy === userId && (
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => handleDeleteClick(meeting)}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleInviteClick(meeting)}
+                    title="Invite users"
+                  >
+                    <MailPlus className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleDeleteClick(meeting)}
+                    title="Delete meeting"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
               )}
             </CardFooter>
           </Card>
@@ -177,6 +248,51 @@ export function MeetingsList({ meetings, userId }: MeetingsListProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Invite Users to Meeting</DialogTitle>
+            <DialogDescription>
+              Send email invitations to join "{selectedMeeting?.title}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="emails">Email Addresses</Label>
+              <textarea
+                id="emails"
+                value={inviteEmails}
+                onChange={(e) => setInviteEmails(e.target.value)}
+                placeholder="Enter email addresses (one per line or comma-separated)&#10;example@email.com, another@email.com"
+                className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              />
+            </div>
+            {inviteMessage && (
+              <div className={`text-sm ${inviteMessage.startsWith('✓') ? 'text-green-600' : 'text-red-600'}`}>
+                {inviteMessage}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setInviteDialogOpen(false)}
+              disabled={isSendingInvites}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSendInvites}
+              disabled={isSendingInvites || !inviteEmails.trim()}
+            >
+              {isSendingInvites ? 'Sending...' : 'Send Invitations'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

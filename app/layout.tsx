@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next';
 import { Manrope } from 'next/font/google';
 import { getUser, getTeamForUser } from '@/lib/db/queries';
 import { SWRConfig } from 'swr';
+import { AppNavbar } from '@/components/app-navbar';
 
 export const metadata: Metadata = {
   title: 'Next.js SaaS Starter',
@@ -25,7 +26,7 @@ export default function RootLayout({
       lang="en"
       className={`bg-white dark:bg-gray-950 text-black dark:text-white ${manrope.className}`}
     >
-      <body className="min-h-[100dvh] bg-gray-50">
+      <body className="min-h-screen bg-gray-50">
         <SWRConfig
           value={{
             fallback: {
@@ -36,7 +37,12 @@ export default function RootLayout({
             }
           }}
         >
-          {children}
+          <div className="flex min-h-screen flex-col">
+            <AppNavbar />
+            <main className="flex-1 min-h-0 flex flex-col">
+              {children}
+            </main>
+          </div>
         </SWRConfig>
       </body>
     </html>

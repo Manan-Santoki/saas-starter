@@ -9,6 +9,7 @@ import {
   UserMinus,
   Mail,
   CheckCircle,
+  CalendarX,
   type LucideIcon,
 } from 'lucide-react';
 import { ActivityType } from '@/lib/db/schema';
@@ -25,6 +26,11 @@ const iconMap: Record<ActivityType, LucideIcon> = {
   [ActivityType.REMOVE_TEAM_MEMBER]: UserMinus,
   [ActivityType.INVITE_TEAM_MEMBER]: Mail,
   [ActivityType.ACCEPT_INVITATION]: CheckCircle,
+  [ActivityType.CREATE_MEETING]: CalendarX,
+  [ActivityType.DELETE_MEETING]: CalendarX,
+  [ActivityType.JOIN_MEETING]: CalendarX,
+  [ActivityType.END_MEETING]: CalendarX,
+  [ActivityType.CANCEL_MEETING]: CalendarX,
 };
 
 function getRelativeTime(date: Date) {
@@ -57,6 +63,10 @@ function formatAction(action: ActivityType): string {
       return 'You updated your account';
     case ActivityType.CREATE_TEAM:
       return 'You created a new team';
+    case ActivityType.CREATE_MEETING:
+      return 'You created a new meeting';
+    case ActivityType.DELETE_MEETING:
+      return 'You deleted a meeting';
     case ActivityType.REMOVE_TEAM_MEMBER:
       return 'You removed a team member';
     case ActivityType.INVITE_TEAM_MEMBER:

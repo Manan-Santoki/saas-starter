@@ -54,17 +54,20 @@ export function JitsiMeetingComponent({
     });
   };
 
-  const getIFrameRef = (iframeRef: HTMLIFrameElement) => {
+  const getIFrameRef = (iframeRef: HTMLDivElement) => {
     if (iframeRef) {
       iframeRef.style.height = '100%';
       iframeRef.style.width = '100%';
     }
   };
 
+  const containerClassName =
+    'relative w-full h-full flex flex-col overflow-hidden bg-black';
+
   return (
-    <div className="relative w-full h-full min-h-[600px]">
+    <div className={containerClassName}>
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 z-10">
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-orange-500" />
             <p className="text-sm text-gray-600">Loading meeting room...</p>

@@ -6,6 +6,8 @@ import { eq, desc } from 'drizzle-orm';
 import { MeetingsList } from './meetings-list';
 import { CreateMeetingDialog } from './create-meeting-dialog';
 
+export const dynamic = 'force-dynamic';
+
 export default async function MeetingsPage() {
   const user = await getUser();
 
@@ -26,7 +28,7 @@ export default async function MeetingsPage() {
     .orderBy(desc(meetings.createdAt));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="h-full bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <div>

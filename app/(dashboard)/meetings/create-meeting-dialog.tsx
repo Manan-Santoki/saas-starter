@@ -26,6 +26,7 @@ export function CreateMeetingDialog() {
     scheduledAt: '',
     recordingEnabled: false,
     maxParticipants: 50,
+    allowGuests: true,
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,6 +48,7 @@ export function CreateMeetingDialog() {
           scheduledAt: '',
           recordingEnabled: false,
           maxParticipants: 50,
+          allowGuests: true,
         });
         router.refresh();
       }
@@ -139,6 +141,23 @@ export function CreateMeetingDialog() {
               />
               <Label htmlFor="recordingEnabled" className="font-normal">
                 Enable recording (requires moderator permissions)
+              </Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="allowGuests"
+                checked={formData.allowGuests}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    allowGuests: e.target.checked,
+                  })
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+              <Label htmlFor="allowGuests" className="font-normal">
+                Allow guests to join without signing in
               </Label>
             </div>
           </div>

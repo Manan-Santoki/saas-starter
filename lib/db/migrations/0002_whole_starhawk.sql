@@ -1,0 +1,1 @@
+ALTER TABLE "meetings" ADD COLUMN "allow_guests" boolean DEFAULT true NOT NULL;

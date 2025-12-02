@@ -99,8 +99,11 @@ export async function getActivityLogs() {
     .limit(10);
 }
 
-export async function getTeamForUser() {
-  const user = await getUser();
+export async function getTeamForUser(userId?: number) {
+  const user = userId ? await db.query.users.findFirst({
+    where: eq(users.id, userId),
+  }) : await getUser();
+
   if (!user) {
     return null;
   }

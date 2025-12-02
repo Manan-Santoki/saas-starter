@@ -71,6 +71,7 @@ export const invitations = pgTable('invitations', {
 
 export const meetings = pgTable('meetings', {
   id: serial('id').primaryKey(),
+  uuid: varchar('uuid', { length: 36 }).notNull().unique(),
   roomName: varchar('room_name', { length: 255 }).notNull().unique(),
   teamId: integer('team_id')
     .notNull()
@@ -90,6 +91,7 @@ export const meetings = pgTable('meetings', {
   recordingUrl: text('recording_url'),
   isActive: boolean('is_active').notNull().default(true), // for kill switch
   maxParticipants: integer('max_participants').default(50),
+  allowGuests: boolean('allow_guests').notNull().default(true),
 });
 
 export const meetingParticipants = pgTable('meeting_participants', {
@@ -212,6 +214,7 @@ export enum ActivityType {
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
   CREATE_MEETING = 'CREATE_MEETING',
+  DELETE_MEETING = 'DELETE_MEETING',
   JOIN_MEETING = 'JOIN_MEETING',
   END_MEETING = 'END_MEETING',
   CANCEL_MEETING = 'CANCEL_MEETING',

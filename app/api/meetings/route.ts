@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
       scheduledAt,
       recordingEnabled,
       maxParticipants,
+      allowGuests,
     } = body;
 
     if (!title) {
@@ -74,6 +75,7 @@ export async function POST(request: NextRequest) {
     const [meeting] = await db
       .insert(meetings)
       .values({
+        uuid: uuidv4(),
         roomName,
         teamId: teamData.id,
         createdBy: user.id,
@@ -82,6 +84,7 @@ export async function POST(request: NextRequest) {
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         recordingEnabled: recordingEnabled || false,
         maxParticipants: maxParticipants || 50,
+        allowGuests: allowGuests !== undefined ? allowGuests : true,
       })
       .returning();
 

@@ -73,6 +73,11 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
+    // Delete all participants for this meeting first to satisfy foreign key constraints
+    await db
+      .delete(meetingParticipants)
+      .where(eq(meetingParticipants.meetingId, meetingId));
+
     await db.delete(meetings).where(eq(meetings.id, meetingId));
 
     // Log the activity
