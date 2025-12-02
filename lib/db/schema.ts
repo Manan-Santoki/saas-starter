@@ -5,6 +5,7 @@ import {
   text,
   timestamp,
   integer,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -68,15 +69,55 @@ export const invitations = pgTable('invitations', {
   status: varchar('status', { length: 20 }).notNull().default('pending'),
 });
 
+export const meetings = pgTable('meetings', {
+  id: serial('id').primaryKey(),
+  roomName: varchar('room_name', { length: 255 }).notNull().unique(),
+  teamId: integer('team_id')
+    .notNull()
+    .references(() => teams.id),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => users.id),
+  title: varchar('title', { length: 255 }).notNull(),
+  description: text('description'),
+  status: varchar('status', { length: 20 }).notNull().default('scheduled'), // scheduled, active, ended, cancelled
+  scheduledAt: timestamp('scheduled_at'),
+  startedAt: timestamp('started_at'),
+  endedAt: timestamp('ended_at'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  recordingEnabled: boolean('recording_enabled').notNull().default(false),
+  recordingUrl: text('recording_url'),
+  isActive: boolean('is_active').notNull().default(true), // for kill switch
+  maxParticipants: integer('max_participants').default(50),
+});
+
+export const meetingParticipants = pgTable('meeting_participants', {
+  id: serial('id').primaryKey(),
+  meetingId: integer('meeting_id')
+    .notNull()
+    .references(() => meetings.id),
+  userId: integer('user_id').references(() => users.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull(),
+  isModerator: boolean('is_moderator').notNull().default(false),
+  joinedAt: timestamp('joined_at').notNull().defaultNow(),
+  leftAt: timestamp('left_at'),
+  duration: integer('duration'), // in seconds
+});
+
 export const teamsRelations = relations(teams, ({ many }) => ({
   teamMembers: many(teamMembers),
   activityLogs: many(activityLogs),
   invitations: many(invitations),
+  meetings: many(meetings),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
   teamMembers: many(teamMembers),
   invitationsSent: many(invitations),
+  meetingsCreated: many(meetings),
+  meetingParticipants: many(meetingParticipants),
 }));
 
 export const invitationsRelations = relations(invitations, ({ one }) => ({
@@ -112,6 +153,32 @@ export const activityLogsRelations = relations(activityLogs, ({ one }) => ({
   }),
 }));
 
+export const meetingsRelations = relations(meetings, ({ one, many }) => ({
+  team: one(teams, {
+    fields: [meetings.teamId],
+    references: [teams.id],
+  }),
+  creator: one(users, {
+    fields: [meetings.createdBy],
+    references: [users.id],
+  }),
+  participants: many(meetingParticipants),
+}));
+
+export const meetingParticipantsRelations = relations(
+  meetingParticipants,
+  ({ one }) => ({
+    meeting: one(meetings, {
+      fields: [meetingParticipants.meetingId],
+      references: [meetings.id],
+    }),
+    user: one(users, {
+      fields: [meetingParticipants.userId],
+      references: [users.id],
+    }),
+  })
+);
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Team = typeof teams.$inferSelect;
@@ -128,6 +195,11 @@ export type TeamDataWithMembers = Team & {
   })[];
 };
 
+export type Meeting = typeof meetings.$inferSelect;
+export type NewMeeting = typeof meetings.$inferInsert;
+export type MeetingParticipant = typeof meetingParticipants.$inferSelect;
+export type NewMeetingParticipant = typeof meetingParticipants.$inferInsert;
+
 export enum ActivityType {
   SIGN_UP = 'SIGN_UP',
   SIGN_IN = 'SIGN_IN',
@@ -139,4 +211,8 @@ export enum ActivityType {
   REMOVE_TEAM_MEMBER = 'REMOVE_TEAM_MEMBER',
   INVITE_TEAM_MEMBER = 'INVITE_TEAM_MEMBER',
   ACCEPT_INVITATION = 'ACCEPT_INVITATION',
+  CREATE_MEETING = 'CREATE_MEETING',
+  JOIN_MEETING = 'JOIN_MEETING',
+  END_MEETING = 'END_MEETING',
+  CANCEL_MEETING = 'CANCEL_MEETING',
 }
