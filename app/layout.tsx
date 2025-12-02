@@ -6,8 +6,9 @@ import { SWRConfig } from 'swr';
 import { AppNavbar } from '@/components/app-navbar';
 
 export const metadata: Metadata = {
-  title: 'Next.js SaaS Starter',
-  description: 'Get started quickly with Next.js, Postgres, and Stripe.'
+  title: 'JitsiMeet – Video Meetings',
+  description:
+    'Host secure, self‑managed video meetings with Jitsi, Next.js, and Postgres.'
 };
 
 export const viewport: Viewport = {

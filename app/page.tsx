@@ -154,7 +154,7 @@ export default async function LandingPage() {
                     <CardHeader className="text-center py-12">
                         <CardTitle className="text-4xl mb-4">Ready to get started?</CardTitle>
                         <CardDescription className="text-white/90 text-lg mb-8">
-                            Join thousands of teams using VideoMeet for their daily communication
+                            Join thousands of teams using VChat for their daily communication
                         </CardDescription>
                         <div className="flex gap-4 justify-center">
                             <Link href={user ? "/meetings" : "/sign-up"}>
@@ -201,7 +201,7 @@ export default async function LandingPage() {
                         </div>
                     </div>
                     <div className="mt-12 pt-8 border-t text-center text-sm text-gray-600">
-                        <p>© 2025 VideoMeet. All rights reserved.</p>
+                        <p>© 2025 VChat. All rights reserved.</p>
                     </div>
                 </div>
             </footer>
