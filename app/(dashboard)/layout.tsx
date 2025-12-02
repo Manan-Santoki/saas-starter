@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { use, useState, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleIcon, Home, LogOut } from 'lucide-react';
+import { CircleIcon, Home, LogOut, Video, Shield } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,6 +45,8 @@ function UserMenu() {
     );
   }
 
+  const isAdmin = user.role === 'owner' || user.role === 'admin';
+
   return (
     <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
       <DropdownMenuTrigger>
@@ -65,6 +67,20 @@ function UserMenu() {
             <span>Dashboard</span>
           </Link>
         </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer">
+          <Link href="/meetings" className="flex w-full items-center">
+            <Video className="mr-2 h-4 w-4" />
+            <span>Meetings</span>
+          </Link>
+        </DropdownMenuItem>
+        {isAdmin && (
+          <DropdownMenuItem className="cursor-pointer">
+            <Link href="/admin" className="flex w-full items-center">
+              <Shield className="mr-2 h-4 w-4" />
+              <span>Admin</span>
+            </Link>
+          </DropdownMenuItem>
+        )}
         <form action={handleSignOut} className="w-full">
           <button type="submit" className="flex w-full">
             <DropdownMenuItem className="w-full flex-1 cursor-pointer">
@@ -87,6 +103,19 @@ function Header() {
           <span className="ml-2 text-xl font-semibold text-gray-900">ACME</span>
         </Link>
         <div className="flex items-center space-x-4">
+          <Link
+            href="/meetings"
+            className="hidden sm:flex items-center text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Meetings
+          </Link>
+          <Link
+            href="/pricing"
+            className="text-sm font-medium text-gray-700 hover:text-gray-900"
+          >
+            Pricing
+          </Link>
           <Suspense fallback={<div className="h-9" />}>
             <UserMenu />
           </Suspense>
